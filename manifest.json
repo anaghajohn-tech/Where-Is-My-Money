@@ -1,11 +1,12 @@
 {
-  "name": "MyFinance - Personal Money Manager",
-  "short_name": "MyFinance",
-  "description": "Personal finance manager for salary, tuition, EMIs, family and friends",
-  "start_url": "/",
+  "name": "Where is my money?",
+  "short_name": "MyMoney",
+  "description": "Personal finance manager for salary, EMIs, family and friends",
+  "start_url": "/where-is-mymoney/",
+  "scope": "/where-is-mymoney/",
   "display": "standalone",
-  "background_color": "#0f0f1a",
-  "theme_color": "#1a1a2e",
+  "background_color": "#0d0d1a",
+  "theme_color": "#0d0d1a",
   "orientation": "portrait",
   "icons": [
     {
