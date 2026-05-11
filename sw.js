@@ -1,5 +1,5 @@
-const CACHE='myfinance-v1';
-const FILES=['/','/index.html','/manifest.json'];
+const CACHE='myfinance-v2';
+const FILES=['/Where-Is-My-Money/','/Where-Is-My-Money/index.html','/Where-Is-My-Money/manifest.json'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)));
@@ -12,5 +12,5 @@ self.addEventListener('activate',e=>{
 });
 
 self.addEventListener('fetch',e=>{
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('/index.html'))));
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('/Where-Is-My-Money/index.html'))));
 });
