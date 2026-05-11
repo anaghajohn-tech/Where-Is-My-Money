@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0d0d1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Where is my money?">
+<title>Where is my money?</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0d1a;--s1:#13131f;--s2:#1c1c2e;--s3:#252540;--s4:#2e2e50;
+  --acc:#7c6af5;--acc2:#a08fff;--acc3:#c4bcff;
+  --grn:#22c55e;--grn-d:rgba(34,197,94,.13);
+  --red:#f87171;--red-d:rgba(248,113,113,.13);
+  --amb:#fbbf24;--amb-d:rgba(251,191,36,.13);
+  --blu:#60a5fa;--blu-d:rgba(96,165,250,.13);
+  --pnk:#f472b6;--pnk-d:rgba(244,114,182,.13);
+  --cyn:#34d399;--cyn-d:rgba(52,211,153,.13);
+  --tx1:#eeeeff;--tx2:#8888aa;--tx3:#55556a;
+  --bd:rgba(255,255,255,.07);--bda:rgba(124,106,245,.25);
+  --r:14px;--r2:10px;--r3:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body{height:100%;background:var(--bg);color:var(--tx1);font-family:'Inter',sans-serif;overflow:hidden;font-size:14px}
+button,select,input,textarea{font-family:'Inter',sans-serif}
+
+/* PIN */
+#PIN{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:0}
+#PIN.off{display:none}
+.pin-logo-wrap{margin-bottom:.75rem;text-align:center}
+.pin-logo-main{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--tx1);line-height:1.2}
+.pin-logo-main em{font-style:italic;color:var(--acc2)}
+.pin-logo-sub{font-size:10px;color:var(--tx3);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.pin-tagline{font-size:12px;color:var(--tx2);margin:1.5rem 0 0;text-align:center}
+.pin-hint{font-size:12px;color:var(--acc2);font-weight:500;min-height:16px;margin:1rem 0 1.5rem;text-align:center}
+.pin-dots{display:flex;gap:14px;margin-bottom:2rem}
+.pd{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--s4);transition:all .15s}
+.pd.on{background:var(--acc);border-color:var(--acc)}
+.pd.err{background:var(--red);border-color:var(--red)}
+.pd.ok{background:var(--grn);border-color:var(--grn)}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:240px}
+.pk{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:16px;font-size:20px;font-weight:500;color:var(--tx1);cursor:pointer;text-align:center;user-select:none;transition:background .1s}
+.pk:active{background:var(--s4)}
+.pk.ghost{background:none;border:none;cursor:default}
+.pk.del{color:var(--tx2);font-size:16px}
+.pin-err{font-size:11px;color:var(--red);min-height:16px;margin-top:.6rem;text-align:center}
+.pin-link{font-size:11px;color:var(--tx3);margin-top:1.25rem;text-decoration:underline;cursor:pointer}
+
+/* APP SHELL */
+#APP{height:100dvh;display:flex;flex-direction:column;max-width:430px;margin:0 auto}
+
+/* TOPBAR */
+.topbar{padding:.8rem 1rem .65rem;display:flex;align-items:center;justify-content:space-between;background:var(--bg);flex-shrink:0;border-bottom:1px solid var(--bd)}
+.tb-logo{display:flex;flex-direction:column;line-height:1}
+.tb-logo-main{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--tx1);letter-spacing:-.2px}
+.tb-logo-main em{font-style:italic;color:var(--acc2)}
+.tb-logo-sub{font-size:8px;color:var(--tx3);letter-spacing:1.8px;text-transform:uppercase;margin-top:2px}
+.tb-right{display:flex;align-items:center;gap:7px}
+.mc{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r3);padding:4px 7px}
+.mc-btn{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:14px;padding:0 2px;line-height:1}
+.mc-lbl{font-size:11px;font-weight:600;color:var(--acc3);min-width:68px;text-align:center}
+.icon-btn{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r3);padding:5px 7px;color:var(--tx2);cursor:pointer;font-size:13px;line-height:1}
+
+/* SCROLL */
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 .9rem 5.5rem}
+.scroll::-webkit-scrollbar{display:none}
+
+/* BOTTOM NAV */
+.bnav{flex-shrink:0;display:grid;grid-template-columns:repeat(6,1fr);background:var(--s1);border-top:1px solid var(--bd);padding:5px 0 max(5px,env(safe-area-inset-bottom))}
+.nb{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 2px;border:none;background:none;color:var(--tx3);font-size:9px;font-weight:500;cursor:pointer;transition:color .15s}
+.nb.on{color:var(--acc2)}
+.nb svg{width:18px;height:18px;stroke-width:1.8;stroke:currentColor;fill:none}
+
+/* PAGES */
+.pg{display:none;padding-top:.65rem}.pg.on{display:block}
+
+/* SECTION HEAD */
+.sh{font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.7px;margin:1rem 0 .45rem;display:flex;align-items:center;justify-content:space-between}
+.sh-a{font-size:11px;color:var(--acc2);font-weight:500;cursor:pointer;text-transform:none;letter-spacing:0}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--bd);border-radius:var(--r);padding:.85rem .95rem;margin-bottom:.55rem}
+.ch{font-size:10px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:.7rem;display:flex;align-items:center;gap:5px}
+
+/* STAT GRID */
+.sg{display:grid;gap:.5rem;margin-bottom:.55rem}
+.sg2{grid-template-columns:1fr 1fr}
+.sg3{grid-template-columns:1fr 1fr 1fr}
+.st{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:.7rem .8rem}
+.stl{font-size:9px;color:var(--tx2);margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.stv{font-size:17px;font-weight:700;letter-spacing:-.3px}
+
+/* ROWS */
+.row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--bd)}
+.row:last-child{border-bottom:none;padding-bottom:0}
+.rl{flex:1;min-width:0}
+.rn{font-size:13px;color:var(--tx1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs{font-size:10px;color:var(--tx2);margin-top:1px}
+.rr{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:8px}
+.amt{font-size:13px;font-weight:600}
+.g{color:var(--grn)}.r{color:var(--red)}.a{color:var(--amb)}.b{color:var(--blu)}.p{color:var(--pnk)}.c{color:var(--cyn)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600}
+.bg{background:var(--grn-d);color:var(--grn)}.br{background:var(--red-d);color:var(--red)}
+.ba{background:var(--amb-d);color:var(--amb)}.bb{background:var(--blu-d);color:var(--blu)}
+.bp{background:var(--pnk-d);color:var(--pnk)}.bx{background:var(--s3);color:var(--tx2)}
+.bc{background:var(--cyn-d);color:var(--cyn)}
+
+/* PROGRESS */
+.prog{background:var(--s3);border-radius:3px;height:4px;overflow:hidden;margin-top:8px}
+.pf{height:100%;border-radius:3px;transition:width .4s}
+.pl{font-size:10px;color:var(--tx2);margin-top:4px}
+
+/* AVATAR */
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+
+/* BUTTONS */
+.addbtn{width:100%;padding:9px;border:1px dashed var(--bd);border-radius:var(--r2);background:none;color:var(--tx2);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;margin-top:.45rem;transition:background .15s}
+.addbtn:active{background:var(--s2)}
+.xbtn{background:none;border:none;color:var(--tx3);cursor:pointer;padding:3px;font-size:13px;opacity:.7;flex-shrink:0}
+.xbtn:active{color:var(--red);opacity:1}
+.pill-btn{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--bd);background:var(--s2);color:var(--tx2);cursor:pointer}
+.pill-btn.accent{background:var(--acc);border-color:var(--acc);color:#fff}
+
+/* FAB */
+.fab{position:fixed;bottom:calc(60px + env(safe-area-inset-bottom));right:.9rem;width:50px;height:50px;background:var(--acc);border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(124,106,245,.45);z-index:10}
+.fab:active{transform:scale(.93)}
+.fab svg{width:22px;height:22px;stroke:#fff;stroke-width:2.5;fill:none}
+
+/* FILTERS */
+.frow{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:.55rem}
+.frow::-webkit-scrollbar{display:none}
+.fc{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:500;border:1px solid var(--bd);background:var(--s2);color:var(--tx2);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.fc.on{background:rgba(124,106,245,.18);border-color:var(--acc);color:var(--acc2)}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:400;align-items:flex-end;justify-content:center}
+.mo.on{display:flex}
+.mb{background:var(--s1);border-radius:18px 18px 0 0;border-top:1px solid var(--bd);padding:1rem 1rem max(1.3rem,env(safe-area-inset-bottom));width:100%;max-width:430px;max-height:92dvh;overflow-y:auto}
+.mb::-webkit-scrollbar{display:none}
+.mh{width:32px;height:3px;background:var(--s4);border-radius:2px;margin:0 auto .85rem}
+.mt{font-size:16px;font-weight:600;margin-bottom:.9rem;color:var(--tx1)}
+.fl{font-size:10px;color:var(--tx2);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:4px;display:block;margin-top:.7rem}
+.fl:first-of-type{margin-top:0}
+input,select,textarea{width:100%;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:10px 11px;color:var(--tx1);font-size:14px;outline:none;-webkit-appearance:none;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--acc)}
+select option{background:var(--s2);color:var(--tx1)}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mac{display:flex;gap:8px;margin-top:.9rem}
+.bsv{flex:1;padding:11px;background:var(--acc);color:#fff;border:none;border-radius:var(--r2);font-size:14px;font-weight:600;cursor:pointer}
+.bsv:active{opacity:.85}
+.bcn{flex:1;padding:11px;background:var(--s2);color:var(--tx2);border:1px solid var(--bd);border-radius:var(--r2);font-size:14px;cursor:pointer}
+
+/* DETAIL SCREEN */
+.dscr{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;overflow-y:auto}
+.dscr.on{display:block}
+.dhd{padding:.85rem .95rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bd);position:sticky;top:0;background:var(--bg);z-index:2}
+.dbk{background:var(--s2);border:1px solid var(--bd);border-radius:var(--r3);padding:6px 10px;color:var(--tx2);font-size:12px;cursor:pointer}
+.dbd{padding:.9rem}
+
+/* SETTINGS */
+.seti{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+.seti:last-child{border-bottom:none}
+.setn{font-size:13px;color:var(--tx1);font-weight:500}
+.sets{font-size:11px;color:var(--tx2);margin-top:2px}
+
+/* TXNS */
+.txni{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--bd)}
+.txni:last-child{border-bottom:none}
+
+/* EMPTY */
+.empty{text-align:center;padding:2rem 1rem;color:var(--tx2);font-size:12px;line-height:1.8}
+
+/* GUIDE STEPS */
+.gstep{display:flex;gap:10px;margin-bottom:.75rem}
+.gn{width:24px;height:24px;border-radius:50%;background:rgba(124,106,245,.15);border:1px solid rgba(124,106,245,.3);color:var(--acc2);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.gtx{font-size:12px;color:var(--tx2);line-height:1.6}
+.gth{font-size:12px;font-weight:600;color:var(--tx1);margin-bottom:2px}
+
+/* SHARE CARD */
+.share-card{background:var(--s2);border:1px solid var(--bda);border-radius:var(--r);padding:1rem;margin-bottom:.55rem}
+.share-title{font-family:'Playfair Display',serif;font-size:13px;font-style:italic;color:var(--acc2);margin-bottom:.5rem}
+
+/* AUTOPAY BADGE */
+.auto-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:20px;font-size:9px;font-weight:700;background:rgba(52,211,153,.15);color:var(--cyn);border:1px solid rgba(52,211,153,.3)}
+.manual-badge{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:20px;font-size:9px;font-weight:700;background:rgba(251,191,36,.12);color:var(--amb);border:1px solid rgba(251,191,36,.25)}
+
+/* TOGGLE SWITCH */
+.tog-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0}
+.tog-label{font-size:12px;color:var(--tx1)}
+.tog{position:relative;width:38px;height:21px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0;position:absolute}
+.tog-sl{position:absolute;inset:0;background:var(--s4);border-radius:21px;cursor:pointer;transition:.2s}
+.tog-sl:before{content:'';position:absolute;width:15px;height:15px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.tog input:checked+.tog-sl{background:var(--cyn)}
+.tog input:checked+.tog-sl:before{transform:translateX(17px)}
+
+/* PARTIAL PAYMENT */
+.part-row{display:flex;gap:7px;margin-top:.45rem}
+.part-row .bsv{font-size:12px;padding:8px}
+</style>
+</head>
+<body>
+
+<!-- PIN -->
+<div id="PIN">
+  <div class="pin-logo-wrap">
+    <div class="pin-logo-main"><em>Where</em> is my <em>money?</em></div>
+    <div class="pin-logo-sub">Personal Finance Manager</div>
+  </div>
+  <div class="pin-tagline" id="pin-sub">Your money, your secrets</div>
+  <div class="pin-hint" id="pin-hint"></div>
+  <div class="pin-dots">
+    <div class="pd" id="pd0"></div><div class="pd" id="pd1"></div>
+    <div class="pd" id="pd2"></div><div class="pd" id="pd3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pk" onclick="pk('1')">1</button><button class="pk" onclick="pk('2')">2</button><button class="pk" onclick="pk('3')">3</button>
+    <button class="pk" onclick="pk('4')">4</button><button class="pk" onclick="pk('5')">5</button><button class="pk" onclick="pk('6')">6</button>
+    <button class="pk" onclick="pk('7')">7</button><button class="pk" onclick="pk('8')">8</button><button class="pk" onclick="pk('9')">9</button>
+    <button class="pk ghost"></button><button class="pk" onclick="pk('0')">0</button><button class="pk del" onclick="pdel()">⌫</button>
+  </div>
+  <div class="pin-err" id="pin-err"></div>
+  <div class="pin-link" onclick="pinForgot()">Forgot PIN? Reset all data</div>
+</div>
+
+<!-- APP -->
+<div id="APP" style="display:none">
+  <div class="topbar">
+    <div class="tb-logo">
+      <div class="tb-logo-main"><em>Where</em> is my <em>money?</em></div>
+      <div class="tb-logo-sub">Personal Finance</div>
+    </div>
+    <div class="tb-right">
+      <div class="mc">
+        <button class="mc-btn" onclick="chM(-1)">‹</button>
+        <span class="mc-lbl" id="mcl">May 2026</span>
+        <button class="mc-btn" onclick="chM(1)">›</button>
+      </div>
+      <button class="icon-btn" onclick="lockApp()" title="Lock">🔒</button>
+    </div>
+  </div>
+
+  <div class="scroll" id="scroll">
+
+    <!-- HOME -->
+    <div class="pg on" id="pg-home">
+      <div id="hm-stats"></div>
+      <div id="hm-balance" class="card"></div>
+      <div id="hm-alerts"></div>
+    </div>
+
+    <!-- TRANSACTIONS -->
+    <div class="pg" id="pg-txns">
+      <div class="frow" id="txn-filters">
+        <button class="fc on" onclick="setTF('all',this)">All</button>
+        <button class="fc" onclick="setTF('income',this)">Income</button>
+        <button class="fc" onclick="setTF('expense',this)">Expenses</button>
+        <button class="fc" onclick="setTF('cc',this)">Credit Card</button>
+        <button class="fc" onclick="setTF('emi',this)">EMI</button>
+        <button class="fc" onclick="setTF('people',this)">People</button>
+        <button class="fc" onclick="setTF('borrow',this)">Borrowed</button>
+      </div>
+      <div id="txn-list"></div>
+    </div>
+
+    <!-- PEOPLE -->
+    <div class="pg" id="pg-people">
+      <div class="frow" id="ppl-filters">
+        <button class="fc on" onclick="setPF('all',this)">All</button>
+        <button class="fc" onclick="setPF('Father',this)">Father</button>
+        <button class="fc" onclick="setPF('Mother',this)">Mother</button>
+        <button class="fc" onclick="setPF('Sister',this)">Sister</button>
+        <button class="fc" onclick="setPF('Brother',this)">Brother</button>
+        <button class="fc" onclick="setPF('Friend',this)">Friends</button>
+        <button class="fc" onclick="setPF('Colleague',this)">Colleagues</button>
+      </div>
+      <div id="ppl-list"></div>
+      <button class="addbtn" onclick="openM('person')">＋ Add person</button>
+    </div>
+
+    <!-- EMI & CC -->
+    <div class="pg" id="pg-emi">
+      <div class="sh">Loans & EMIs <span class="sh-a" onclick="openM('emi')">+ Add loan</span></div>
+      <div id="emi-list"></div>
+      <div class="sh">Credit Cards <span class="sh-a" onclick="openM('cc')">+ Add card</span></div>
+      <div id="cc-list"></div>
+      <div class="card" style="margin-top:.3rem">
+        <div class="row"><div class="rl"><div class="rn">Total EMI / month</div></div><div class="amt a" id="emi-tot">₹0</div></div>
+        <div class="row"><div class="rl"><div class="rn">Total CC outstanding</div></div><div class="amt r" id="cc-tot">₹0</div></div>
+      </div>
+    </div>
+
+    <!-- ACCOUNTS -->
+    <div class="pg" id="pg-acct">
+      <div id="acct-list"></div>
+      <button class="addbtn" onclick="openM('account')">＋ Add bank account</button>
+      <div class="card" style="margin-top:.3rem">
+        <div class="row"><div class="rl"><div class="rn" style="font-weight:600">Total balance (all accounts)</div></div><div class="amt b" id="acct-tot">₹0</div></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="pg" id="pg-settings">
+      <div class="card">
+        <div class="ch">🔒 Security</div>
+        <div class="seti" onclick="startChPin()"><div><div class="setn">Change PIN</div><div class="sets">Update your 4-digit PIN</div></div><span style="color:var(--tx3)">›</span></div>
+        <div class="seti" onclick="lockApp()"><div><div class="setn">Lock app now</div></div><span style="color:var(--tx3)">›</span></div>
+      </div>
+      <div class="card">
+        <div class="ch">💾 Backup & Restore</div>
+        <div style="font-size:12px;color:var(--tx2);line-height:1.7;margin-bottom:.85rem">Always back up before clearing browser data. Your backup file can restore everything.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="pill-btn accent" onclick="exportData()">📤 Export backup</button>
+          <button class="pill-btn" onclick="el('import-file').click()">📥 Import backup</button>
+        </div>
+        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+      <div class="card">
+        <div class="ch">📤 Share my summary</div>
+        <div style="font-size:12px;color:var(--tx2);line-height:1.6;margin-bottom:.85rem">Share a summary with family or friends. Your PIN and full data are never included.</div>
+        <button class="pill-btn accent" onclick="openShareModal()">Share this month's summary</button>
+      </div>
+      <div class="card">
+        <div class="ch">📱 Install as app</div>
+        <div class="gstep"><div class="gn">A</div><div><div class="gth">Android — Chrome</div><div class="gtx">Open URL in Chrome → tap ⋮ → "Add to Home screen" → Add</div></div></div>
+        <div class="gstep"><div class="gn">i</div><div><div class="gth">iPhone — Safari</div><div class="gtx">Open URL in Safari → tap Share icon → "Add to Home Screen" → Add</div></div></div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:.5rem">Share this HTML file with friends/family — they open it in their browser and it works offline!</div>
+      </div>
+      <div class="card">
+        <div class="ch">💡 Data safety</div>
+        <div style="font-size:12px;color:var(--tx2);line-height:1.7">All data lives <strong style="color:var(--tx1)">only on your phone</strong>. Nobody else can see it. Export a backup regularly.</div>
+      </div>
+      <div class="card">
+        <div class="ch" style="color:var(--red)">⚠️ Danger zone</div>
+        <button class="addbtn" style="border-color:rgba(248,113,113,.3);color:var(--red)" onclick="confirmReset()">Delete all data & reset</button>
+      </div>
+    </div>
+
+  </div><!-- end scroll -->
+
+  <nav class="bnav">
+    <button class="nb on" onclick="showPg('home',this)"><svg viewBox="0 0 24 24"><path d="M3 12L12 3l9 9M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9"/></svg>Home</button>
+    <button class="nb" onclick="showPg('txns',this)"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>History</button>
+    <button class="nb" onclick="showPg('people',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>People</button>
+    <button class="nb" onclick="showPg('emi',this)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>EMI/CC</button>
+    <button class="nb" onclick="showPg('acct',this)"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>Accounts</button>
+    <button class="nb" onclick="showPg('settings',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</button>
+  </nav>
+  <button class="fab" onclick="openM('quick')"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></button>
+</div>
+
+<!-- PERSON DETAIL -->
+<div class="dscr" id="det-person">
+  <div class="dhd">
+    <button class="dbk" onclick="closeDet('det-person')">‹ Back</button>
+    <div style="flex:1"><div style="font-size:15px;font-weight:600" id="det-pname"></div><div style="font-size:11px;color:var(--tx2)" id="det-prel"></div></div>
+    <button class="xbtn" style="font-size:16px;opacity:.9" onclick="delPerson()">🗑</button>
+  </div>
+  <div class="dbd">
+    <div class="sg sg2" style="margin-bottom:.55rem">
+      <div class="st"><div class="stl">Total given</div><div class="stv p" id="dp-given">₹0</div></div>
+      <div class="st"><div class="stl">Total received</div><div class="stv c" id="dp-recv">₹0</div></div>
+    </div>
+    <div id="dp-pending"></div>
+    <div class="sh">All transactions <span class="sh-a" onclick="openPTxnDirect()">+ Add</span></div>
+    <div id="dp-txns"></div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="M" onclick="closeMOBg(event)">
+
+  <!-- QUICK ADD -->
+  <div class="mb" id="m-quick" style="display:none">
+    <div class="mh"></div><div class="mt">Add transaction</div>
+    <label class="fl">What to add?</label>
+    <select id="qa">
+      <option value="income">💰 Income / salary</option>
+      <option value="expense">🛒 Personal expense</option>
+      <option value="cc-exp">💳 Credit card expense</option>
+      <option value="emi-pay">📅 Pay an EMI (manual)</option>
+      <option value="people">👥 Give / receive (people)</option>
+    </select>
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="qRoute()">Next ›</button></div>
+  </div>
+
+  <!-- INCOME -->
+  <div class="mb" id="m-income" style="display:none">
+    <div class="mh"></div><div class="mt">Add income</div>
+    <label class="fl">Source / description</label>
+    <input id="in-d" placeholder="e.g. Salary June, Freelance work">
+    <label class="fl">Income category</label>
+    <select id="in-t">
+      <option value="Salary">Monthly Salary</option>
+      <option value="Tuition">Tuition / Coaching</option>
+      <option value="Freelance">Freelance work</option>
+      <option value="Rental">Rental income</option>
+      <option value="Interest">Interest / FD returns</option>
+      <option value="Gift">Gift received</option>
+      <option value="Bonus">Bonus / Incentive</option>
+      <option value="Other Income">Other income</option>
+    </select>
+    <label class="fl">Custom label (optional)</label>
+    <input id="in-custom" placeholder="e.g. Private tuition – Rajan">
+    <div class="fr2">
+      <div><label class="fl">Amount (₹)</label><input type="number" id="in-a" inputmode="numeric" placeholder="0"></div>
+      <div><label class="fl">Date</label><input type="date" id="in-dt"></div>
+    </div>
+    <label class="fl">Received in account</label><select id="in-acc"></select>
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="saveIncome()">Save</button></div>
+  </div>
+
+  <!-- EXPENSE -->
+  <div class="mb" id="m-expense" style="display:none">
+    <div class="mh"></div><div class="mt">Add expense</div>
+    <label class="fl">Description</label>
+    <input id="ex-d" placeholder="e.g. Groceries, Electricity bill">
+    <label class="fl">Category</label>
+    <select id="ex-cat">
+      <option>Food & Groceries</option><option>Bills & Utilities</option><option>Transport</option>
+      <option>Health & Medical</option><option>Education</option><option>Clothing</option>
+      <option>Entertainment</option><option>Family & Household</option><option>Personal care</option><option>Other</option>
+    </select>
+    <div class="fr2">
+      <div><label class="fl">Amount (₹)</label><input type="number" id="ex-a" inputmode="numeric" placeholder="0"></div>
+      <div><label class="fl">Date</label><input type="date" id="ex-dt"></div>
+    </div>
+    <label class="fl">Paid from account</label><select id="ex-acc"></select>
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="saveExpense()">Save</button></div>
+  </div>
+
+  <!-- CC EXPENSE -->
+  <div class="mb" id="m-cc-exp" style="display:none">
+    <div class="mh"></div><div class="mt">Credit card expense</div>
+    <label class="fl">Description</label>
+    <input id="cce-d" placeholder="e.g. Amazon order, Restaurant">
+    <label class="fl">Category</label>
+    <select id="cce-cat">
+      <option>Shopping</option><option>Food & Dining</option><option>Travel</option>
+      <option>Entertainment</option><option>Bills</option><option>Health</option><option>Other</option>
+    </select>
+    <div class="fr2">
+      <div><label class="fl">Amount (₹)</label><input type="number" id="cce-a" inputmode="numeric" placeholder="0"></div>
+      <div><label class="fl">Date</label><input type="date" id="cce-dt"></div>
+    </div>
+    <label class="fl">Credit card used</label><select id="cce-card"></select>
+    <label class="fl">Convert to EMI?</label>
+    <select id="cce-emi" onchange="toggleCCEmi()">
+      <option value="no">No — add to card outstanding</option>
+      <option value="yes">Yes — convert to EMI</option>
+    </select>
+    <div id="cce-emi-fields" style="display:none">
+      <div class="fr2">
+        <div><label class="fl">No. of months</label><input type="number" id="cce-emim" placeholder="6"></div>
+        <div><label class="fl">Debit account</label><select id="cce-deb"></select></div>
+      </div>
+    </div>
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="saveCCExp()">Save</button></div>
+  </div>
+
+  <!-- EMI PAY (MANUAL) -->
+  <div class="mb" id="m-emi-pay" style="display:none">
+    <div class="mh"></div><div class="mt">Mark EMI as paid</div>
+    <div style="font-size:11px;color:var(--amb);background:var(--amb-d);border-radius:var(--r3);padding:8px 10px;margin-bottom:.7rem">This is for <strong>manual payment</strong>. Auto-pay loans are tracked automatically.</div>
+    <label class="fl">Select loan / EMI</label>
+    <select id="ep-emi" onchange="epEmiChange()"></select>
+    <div class="fr2">
+      <div><label class="fl">Amount paid (₹)</label><input type="number" id="ep-a" inputmode="numeric" placeholder="0"></div>
+      <div><label class="fl">Payment date</label><input type="date" id="ep-dt"></div>
+    </div>
+    <label class="fl">Paid from account</label><select id="ep-acc"></select>
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="saveEmiPay()">Save</button></div>
+  </div>
+
+  <!-- PEOPLE TXN -->
+  <div class="mb" id="m-ptxn" style="display:none">
+    <div class="mh"></div><div class="mt" id="ptxn-title">Money transaction</div>
+    <div id="ptxn-psel-row" style="display:none">
+      <label class="fl">Select person</label><select id="pt-psel"></select>
+    </div>
+    <label class="fl">Transaction type</label>
+    <select id="pt-type" onchange="ptToggle()">
+      <option value="given_gift">I gave money (gift / support — no return)</option>
+      <option value="given_lend">I lent money (they will return)</option>
+      <option value="received">I received money from them</option>
+      <option value="borrowed">I borrowed from them (I will return)</option>
+      <option value="returned">I returned money I had borrowed</option>
+      <option value="recv_back">They returned money they owed me</option>
+    </select>
+    <label class="fl">Description</label>
+    <input id="pt-d" placeholder="e.g. Emergency help, Trip expenses, Monthly support">
+    <div class="fr2">
+      <div><label class="fl">Amount (₹)</label><input type="number" id="pt-a" inputmode="numeric" placeholder="0"></div>
+      <div><label class="fl">Date</label><input type="date" id="pt-dt"></div>
+    </div>
+    <div id="pt-acc-row">
+      <label class="fl" id="pt-acc-lbl">Account</label><select id="pt-acc"></select>
+    </div>
+    <div id="pt-remind-row" style="display:none">
+      <label class="fl">Return by (reminder date)</label>
+      <input type="date" id="pt-rem">
+      <div style="font-size:10px;color:var(--tx2);margin-top:3px">You'll get an alert on the home screen before this date.</div>
+    </div>
+    <label class="fl">Note (optional)</label>
+    <input id="pt-note" placeholder="Any extra detail">
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="savePTxn()">Save</button></div>
+  </div>
+
+  <!-- ADD PERSON -->
+  <div class="mb" id="m-person" style="display:none">
+    <div class="mh"></div><div class="mt">Add person</div>
+    <label class="fl">Name</label>
+    <input id="ps-n" placeholder="e.g. Papa, Mama, Rajan, Arun">
+    <label class="fl">Relation</label>
+    <select id="ps-r">
+      <option>Father</option><option>Mother</option><option>Sister</option><option>Brother</option>
+      <option>Friend</option><option>Colleague</option><option>Other</option>
+    </select>
+    <label class="fl">Phone (optional, for your reference)</label>
+    <input id="ps-ph" placeholder="e.g. 9876543210">
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="savePerson()">Save</button></div>
+  </div>
+
+  <!-- ADD EMI/LOAN -->
+  <div class="mb" id="m-emi" style="display:none">
+    <div class="mh"></div><div class="mt">Add loan / EMI</div>
+    <label class="fl">Loan name</label>
+    <input id="em-n" placeholder="e.g. Home loan, Car loan, Personal loan">
+    <label class="fl">Bank / lender</label>
+    <input id="em-b" placeholder="e.g. SBI, HDFC, Bajaj Finance">
+    <div class="fr2">
+      <div><label class="fl">EMI amount (₹)</label><input type="number" id="em-a" inputmode="numeric" placeholder="0"></div>
+      <div><label class="fl">Due date (day of month)</label><input type="number" id="em-dd" placeholder="5" min="1" max="28"></div>
+    </div>
+    <div class="fr2">
+      <div><label class="fl">Months remaining</label><input type="number" id="em-mr" placeholder="24"></div>
+      <div><label class="fl">Linked account</label><select id="em-acc"></select></div>
+    </div>
+    <!-- AUTO-PAY TOGGLE -->
+    <div style="background:var(--s2);border:1px solid var(--bd);border-radius:var(--r2);padding:10px 12px;margin-top:.7rem">
+      <div class="tog-row">
+        <div>
+          <div class="tog-label" style="font-weight:600">Auto-pay (SI / ECS)</div>
+          <div style="font-size:10px;color:var(--tx2);margin-top:2px">Bank auto-debits every month. No manual entry needed.</div>
+        </div>
+        <label class="tog"><input type="checkbox" id="em-auto" onchange="toggleEmiAuto()"><span class="tog-sl"></span></label>
+      </div>
+      <div id="em-auto-note" style="display:none;font-size:10px;color:var(--cyn);margin-top:4px">✅ Auto-pay: EMI is recorded automatically each month when you open the app.</div>
+    </div>
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="saveEmi()">Save</button></div>
+  </div>
+
+  <!-- ADD CC -->
+  <div class="mb" id="m-cc" style="display:none">
+    <div class="mh"></div><div class="mt">Add credit card</div>
+    <label class="fl">Card name</label>
+    <input id="cc-cn" placeholder="e.g. SBI SimplySave, HDFC Millennia">
+    <label class="fl">Bank</label>
+    <input id="cc-cb" placeholder="e.g. SBI, HDFC, Axis">
+    <div class="fr2">
+      <div><label class="fl">Credit limit (₹)</label><input type="number" id="cc-cl" inputmode="numeric" placeholder="0"></div>
+      <div><label class="fl">Current due (₹)</label><input type="number" id="cc-cd" inputmode="numeric" placeholder="0"></div>
+    </div>
+    <label class="fl">Statement date (day of month)</label>
+    <input type="number" id="cc-sd" placeholder="15" min="1" max="28">
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="saveCCard()">Save</button></div>
+  </div>
+
+  <!-- ADD ACCOUNT -->
+  <div class="mb" id="m-account" style="display:none">
+    <div class="mh"></div><div class="mt">Add bank account</div>
+    <label class="fl">Bank name / label</label>
+    <input id="ac-n" placeholder="e.g. SBI, HDFC, Federal Bank, Cash">
+    <label class="fl">Account type</label>
+    <select id="ac-t">
+      <option>Salary account</option><option>Savings account</option>
+      <option>Current account</option><option>Fixed deposit</option><option>Cash</option>
+    </select>
+    <label class="fl">Current balance (₹)</label>
+    <input type="number" id="ac-b" inputmode="numeric" placeholder="0">
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="saveAccount()">Save</button></div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div class="mb" id="m-share" style="display:none">
+    <div class="mh"></div><div class="mt">Share monthly summary</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:.85rem;line-height:1.6">Your PIN and personal transaction details will never be shared.</div>
+    <label class="fl">Share with</label>
+    <select id="sh-person"><option value="">— General summary —</option></select>
+    <label class="fl">Include</label>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px" id="sh-checks">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx1)"><input type="checkbox" id="sh-inc" checked style="width:auto"> Total income this month</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx1)"><input type="checkbox" id="sh-exp" checked style="width:auto"> Total expenses</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx1)"><input type="checkbox" id="sh-emi" checked style="width:auto"> EMI details</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx1)"><input type="checkbox" id="sh-ff" style="width:auto"> Family & friends transactions</label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--tx1)"><input type="checkbox" id="sh-sav" checked style="width:auto"> Savings amount</label>
+    </div>
+    <div id="sh-preview" style="margin-top:.85rem"></div>
+    <div class="mac"><button class="bcn" onclick="closeM()">Cancel</button><button class="bsv" onclick="copyShare()">📋 Copy to share</button></div>
+  </div>
+
+</div><!-- end modal overlay -->
+
+<script>
+'use strict';
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const AVCOL={Father:'background:rgba(251,191,36,.18);color:#fbbf24',Mother:'background:rgba(244,114,182,.18);color:#f472b6',Sister:'background:rgba(167,139,250,.18);color:#a78bfa',Brother:'background:rgba(96,165,250,.18);color:#60a5fa',Friend:'background:rgba(52,211,153,.18);color:#34d399',Colleague:'background:rgba(6,182,212,.18);color:#06b6d4',Other:'background:rgba(248,113,113,.18);color:#f87171'};
+const uid=()=>Math.random().toString(36).slice(2,9);
+const fmt=n=>'₹'+Math.abs(Math.round(n)).toLocaleString('en-IN');
+const todayStr=()=>new Date().toISOString().slice(0,10);
+const dom=()=>new Date().getDate();
+const daysUntil=s=>{const d=new Date(s),t=new Date();t.setHours(0,0,0,0);d.setHours(0,0,0,0);return Math.round((d-t)/86400000)};
+const mkpfx=(y,m)=>y+'-'+String(m).padStart(2,'0');
+const el=id=>document.getElementById(id);
+const setHTML=(id,h)=>{const e=el(id);if(e)e.innerHTML=h};
+
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+const DK='wimm_v2', PK='wimm_pin';
+// FIX: CM is 1-based (1=Jan, 12=Dec) to match ISO date strings like "2026-05"
+let D, CM=new Date().getMonth()+1, CY=new Date().getFullYear();
+
+function initD(){return{txns:[],people:[],emis:[],ccards:[],accounts:[],autoPayLog:[]}}
+function loadD(){
+  try{
+    // try new key first, then migrate from old
+    let raw=localStorage.getItem(DK);
+    if(!raw){raw=localStorage.getItem('wimm_v1');}
+    D=JSON.parse(raw||'null')||initD();
+  }catch(e){D=initD();}
+  ['txns','people','emis','ccards','accounts'].forEach(k=>{
+    if(!Array.isArray(D[k]))D[k]=[];
+    D[k].forEach(x=>{if(!x.id)x.id=uid();});
+  });
+  if(!Array.isArray(D.autoPayLog))D.autoPayLog=[];
+  // migrate: add autoPay field to existing emis
+  D.emis.forEach(e=>{if(e.autoPay===undefined)e.autoPay=false;});
+}
+function saveD(){localStorage.setItem(DK,JSON.stringify(D));}
+
+// ══════════════════════════════════════════
+// AUTO-PAY PROCESSING
+// Called on app open — records EMI payments for auto-pay loans
+// ══════════════════════════════════════════
+function processAutoPay(){
+  const now=new Date();
+  const y=now.getFullYear(), m=now.getMonth();
+  const pfx=mkpfx(y,m);
+  D.emis.filter(e=>e.autoPay&&e.status!=='completed').forEach(e=>{
+    const due=e.dueDay||1;
+    const today=now.getDate();
+    // Only process if today >= due day and not already logged this month
+    if(today>=due){
+      const alreadyLogged=D.txns.some(t=>t.type==='emi_payment'&&t.emiId===e.id&&t.date.startsWith(pfx));
+      if(!alreadyLogged){
+        const dateStr=pfx+'-'+String(due).padStart(2,'0');
+        D.txns.push({id:uid(),type:'emi_payment',category:'EMI',description:'AUTO: '+e.name,amount:e.amount,date:dateStr,accountId:e.accountId||null,emiId:e.id,isAuto:true});
+        if(e.accountId)adjustAcct(e.accountId,-e.amount);
+        e.monthsLeft=Math.max(0,(e.monthsLeft||1)-1);
+        if(e.monthsLeft===0)e.status='completed';
+      }
+    }
+  });
+  saveD();
+}
+
+// ══════════════════════════════════════════
+// CALCULATIONS — single source of truth
+// ══════════════════════════════════════════
+function calc(y,m){
+  const pfx=mkpfx(y,m);
+  const mt=D.txns.filter(t=>t.date&&t.date.startsWith(pfx));
+  let income=0, myExp=0, ffGiven=0, ffRecv=0, emiPaid=0, ccExp=0, borrowed=0, returned=0;
+  mt.forEach(t=>{
+    const a=t.amount||0;
+    switch(t.type){
+      case 'income':      income+=a; break;
+      case 'expense':     myExp+=a; break;
+      case 'cc_expense':  ccExp+=a; break;
+      case 'emi_payment': emiPaid+=a; break;
+      case 'given_gift':
+      case 'given_lend':  ffGiven+=a; break;
+      case 'received':
+      case 'recv_back':   ffRecv+=a; break;
+      case 'borrowed':    borrowed+=a; break;
+      case 'returned':    returned+=a; break;
+    }
+  });
+  const totalEmiDue=D.emis.filter(e=>e.status!=='completed').reduce((s,e)=>s+(e.amount||0),0);
+  const totalCC=D.ccards.reduce((s,c)=>s+(c.outstanding||0),0);
+  const totalBalance=D.accounts.reduce((s,a)=>s+(a.balance||0),0);
+  const actualSavings=income - myExp - ffGiven - emiPaid - ccExp - returned + ffRecv + borrowed;
+  return{income,myExp,ffGiven,ffRecv,emiPaid,ccExp,borrowed,returned,totalEmiDue,totalCC,totalBalance,actualSavings};
+}
+
+function adjustAcct(accId,delta){
+  const a=D.accounts.find(x=>x.id===accId);
+  if(a){a.balance=Math.round(((a.balance||0)+delta)*100)/100;}
+}
+
+// ══════════════════════════════════════════
+// PIN
+// ══════════════════════════════════════════
+let pbuf='',pmode='unlock',ptmp='';
+const getPin=()=>localStorage.getItem(PK)||'';
+const setPin=p=>localStorage.setItem(PK,p);
+function updDots(state){
+  for(let i=0;i<4;i++){
+    const d=el('pd'+i);d.className='pd';
+    if(state==='err')d.classList.add('err');
+    else if(state==='ok')d.classList.add('ok');
+    else if(i<pbuf.length)d.classList.add('on');
+  }
+}
+function pk(k){if(pbuf.length>=4)return;pbuf+=k;updDots('');if(pbuf.length===4)setTimeout(psub,130);}
+function pdel(){pbuf=pbuf.slice(0,-1);updDots('');}
+function perr(msg){updDots('err');el('pin-err').textContent=msg;setTimeout(()=>{pbuf='';updDots('');el('pin-err').textContent='';},900);}
+function pok(cb){updDots('ok');setTimeout(()=>{pbuf='';cb();},380);}
+function psub(){
+  const v=pbuf;pbuf='';updDots('');
+  if(pmode==='unlock'){
+    if(!getPin())pok(enterApp);
+    else if(v===getPin())pok(enterApp);
+    else perr('Wrong PIN. Try again.');
+  }else if(pmode==='s1'){ptmp=v;pmode='s2';el('pin-hint').textContent='Enter PIN again to confirm';}
+  else if(pmode==='s2'){
+    if(v===ptmp){setPin(v);pok(enterApp);}
+    else{ptmp='';pmode='s1';el('pin-hint').textContent='Set a 4-digit PIN';perr('PINs did not match. Try again.');}
+  }else if(pmode==='c1'){
+    if(v===getPin()){pmode='c2';el('pin-hint').textContent='Enter your new PIN';}
+    else perr('Wrong current PIN.');
+  }else if(pmode==='c2'){ptmp=v;pmode='c3';el('pin-hint').textContent='Confirm new PIN';}
+  else if(pmode==='c3'){
+    if(v===ptmp){setPin(v);pok(()=>{el('PIN').classList.add('off');el('APP').style.display='flex';alert('✅ PIN changed successfully!');});}
+    else{ptmp='';pmode='c2';el('pin-hint').textContent='Enter your new PIN';perr('PINs did not match.');}
+  }
+}
+function enterApp(){el('PIN').classList.add('off');el('APP').style.display='flex';processAutoPay();render();}
+function initPin(){
+  if(!getPin()){pmode='s1';el('pin-sub').textContent='Set a PIN to protect your data';el('pin-hint').textContent='Set a 4-digit PIN';}
+  else{pmode='unlock';el('pin-sub').textContent='Your money, your secrets';el('pin-hint').textContent='';}
+}
+function pinForgot(){if(confirm('This will DELETE all your data and reset the app. Are you sure?')){localStorage.clear();location.reload();}}
+function lockApp(){el('APP').style.display='none';el('PIN').className='';pmode='unlock';pbuf='';updDots('');el('pin-sub').textContent='Your money, your secrets';el('pin-hint').textContent='';el('pin-err').textContent='';}
+function startChPin(){el('APP').style.display='none';el('PIN').className='';pmode='c1';pbuf='';updDots('');el('pin-sub').textContent='Security check';el('pin-hint').textContent='Enter your current PIN';el('pin-err').textContent='';}
+function confirmReset(){if(confirm('Delete ALL data? This cannot be undone.')){localStorage.removeItem(DK);localStorage.removeItem('wimm_v1');loadD();render();}}
+
+// ══════════════════════════════════════════
+// EXPORT / IMPORT
+// ══════════════════════════════════════════
+function exportData(){
+  const blob=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const d=new Date();
+  a.download=`WIMM-backup-${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}.json`;
+  a.click();URL.revokeObjectURL(url);
+  alert('✅ Backup saved! Keep this file safe. Use "Import backup" to restore anytime.');
+}
+function importData(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const parsed=JSON.parse(e.target.result);
+      if(!parsed.txns||!parsed.accounts){alert('❌ Invalid backup file.');return;}
+      if(confirm('This will replace all current data with the backup. Continue?')){
+        D=parsed;
+        if(!Array.isArray(D.autoPayLog))D.autoPayLog=[];
+        D.emis.forEach(em=>{if(em.autoPay===undefined)em.autoPay=false;});
+        saveD();render();alert('✅ Data restored successfully!');
+      }
+    }catch{alert('❌ Could not read file. Make sure it is a valid backup JSON file.');}
+  };
+  reader.readAsText(file);
+  ev.target.value='';
+}
+
+// ══════════════════════════════════════════
+// SHARE
+// ══════════════════════════════════════════
+function openShareModal(){
+  const sel=el('sh-person');
+  sel.innerHTML='<option value="">— General summary (no name) —</option>'+D.people.map(p=>`<option value="${p.id}">${p.name} (${p.relation})</option>`).join('');
+  el('sh-person').onchange=updateSharePreview;
+  updateSharePreview();
+  openM('share');
+}
+function updateSharePreview(){
+  const c=calc(CY,CM);
+  const pid=el('sh-person').value;
+  const person=pid?D.people.find(p=>p.id===pid):null;
+  let lines=['📊 *Monthly Summary — '+MONTHS[CM-1]+' '+CY+'*',''];
+  if(person)lines.push('Shared by: '+person.name,'');
+  if(el('sh-inc')&&el('sh-inc').checked)lines.push('💰 Income: '+fmt(c.income));
+  if(el('sh-exp')&&el('sh-exp').checked)lines.push('🛒 Expenses: '+fmt(c.myExp));
+  if(el('sh-emi')&&el('sh-emi').checked)lines.push('📅 EMI this month: '+fmt(c.emiPaid));
+  if(el('sh-ff')&&el('sh-ff').checked)lines.push('👥 Given to others: '+fmt(c.ffGiven));
+  if(el('sh-sav')&&el('sh-sav').checked)lines.push('','💵 Net savings: '+fmt(c.actualSavings));
+  lines.push('','💼 Total balance: '+fmt(c.totalBalance));
+  lines.push('','Shared from *Where is my money?* app');
+  el('sh-preview').innerHTML='<div class="share-card"><div class="share-title">Preview</div><div style="font-size:12px;color:var(--tx1);line-height:1.8;white-space:pre-wrap">'+lines.join('\n')+'</div></div>';
+  ['sh-inc','sh-exp','sh-emi','sh-ff','sh-sav'].forEach(id=>{const e=el(id);if(e)e.onchange=updateSharePreview;});
+}
+function copyShare(){
+  const preview=el('sh-preview');if(!preview)return;
+  const text=preview.innerText.replace('Preview\n','');
+  if(navigator.share){navigator.share({title:'Monthly Finance Summary',text}).catch(()=>{});}
+  else if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>alert('✅ Copied! Paste in WhatsApp or any app.'));}
+  else{alert('Copy manually:\n\n'+text);}
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function showPg(id,btn){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  el('pg-'+id).classList.add('on');
+  if(btn)btn.classList.add('on');
+  el('scroll').scrollTop=0;
+  render();
+}
+// BUG FIX: month navigation now clamps CY correctly
+function chM(d){
+  CM+=d;
+  if(CM>12){CM=1;CY++;}
+  if(CM<1){CM=12;CY--;}
+  render();
+}
+
+// ══════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════
+const ALL_M=['quick','income','expense','cc-exp','emi-pay','ptxn','person','emi','cc','account','share'];
+let curPersonId=null;
+
+// BUG FIX: date inputs restricted to today or earlier (no future dates)
+function setDateMax(ids){
+  const today=todayStr();
+  ids.forEach(id=>{const e=el(id);if(e){e.max=today;if(!e.value)e.value=today;}});
+}
+
+function fillAcctOpts(ids){
+  const opts=D.accounts.length
+    ?D.accounts.map(a=>`<option value="${a.id}">${a.name} (${fmt(a.balance||0)})</option>`).join('')
+    :'<option value="">— Add an account first —</option>';
+  ids.forEach(id=>{const e=el(id);if(e)e.innerHTML=opts;});
+}
+function fillCCOpts(ids){
+  const opts=D.ccards.length
+    ?D.ccards.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')
+    :'<option value="">— Add a credit card first —</option>';
+  ids.forEach(id=>{const e=el(id);if(e)e.innerHTML=opts;});
+}
+
+function openM(id){
+  el('M').classList.add('on');
+  ALL_M.forEach(t=>el('m-'+t).style.display=t===id?'block':'none');
+  // BUG FIX: set today's date AND restrict to today or earlier
+  setDateMax(['in-dt','ex-dt','cce-dt','ep-dt','pt-dt']);
+  // reminder date: allow future
+  const remField=el('pt-rem');if(remField)remField.min=todayStr();
+  fillAcctOpts(['in-acc','ex-acc','ep-acc','pt-acc','em-acc','cce-deb']);
+  fillCCOpts(['cce-card']);
+}
+function closeM(){el('M').classList.remove('on');}
+function closeMOBg(e){if(e.target===el('M'))closeM();}
+
+function qRoute(){
+  const v=el('qa').value;closeM();
+  if(v==='income')openM('income');
+  else if(v==='expense')openM('expense');
+  else if(v==='cc-exp')openM('cc-exp');
+  else if(v==='emi-pay'){
+    const manualEmis=D.emis.filter(e=>e.status!=='completed'&&!e.autoPay);
+    if(!D.emis.length){alert('No EMIs added yet. Add a loan first.');return;}
+    if(!manualEmis.length){alert('All your active EMIs are set to auto-pay. Auto-pay loans are tracked automatically.');return;}
+    fillEmiPayModal();openM('emi-pay');
+  }
+  else if(v==='people'){
+    if(!D.people.length){alert('Please add a person first in the People tab.');return;}
+    openPTxnGlobal();
+  }
+}
+function fillEmiPayModal(){
+  // Only show manual EMIs
+  const manual=D.emis.filter(e=>e.status!=='completed'&&!e.autoPay);
+  el('ep-emi').innerHTML=manual.map(e=>`<option value="${e.id}">${e.name} — ${fmt(e.amount)}/mo</option>`).join('');
+  epEmiChange();
+}
+function epEmiChange(){
+  const id=el('ep-emi').value;
+  const emi=D.emis.find(e=>e.id===id);
+  if(emi)el('ep-a').value=emi.amount;
+}
+function toggleCCEmi(){
+  el('cce-emi-fields').style.display=el('cce-emi').value==='yes'?'block':'none';
+}
+function toggleEmiAuto(){
+  el('em-auto-note').style.display=el('em-auto').checked?'block':'none';
+}
+function ptToggle(){
+  const v=el('pt-type').value;
+  const needsRemind=v==='given_lend'||v==='borrowed';
+  el('pt-remind-row').style.display=needsRemind?'block':'none';
+  const accLbl=el('pt-acc-lbl');
+  if(accLbl){
+    if(v==='received'||v==='recv_back'||v==='borrowed')accLbl.textContent='Deposit to account';
+    else accLbl.textContent='Deduct from account';
+  }
+}
+function openPTxnGlobal(){
+  curPersonId=null;
+  el('pt-psel').innerHTML=D.people.map(p=>`<option value="${p.id}">${p.name} (${p.relation})</option>`).join('');
+  el('ptxn-psel-row').style.display='block';
+  el('ptxn-title').textContent='Money transaction';
+  ptToggle();openM('ptxn');
+}
+function openPTxnDirect(){
+  el('ptxn-psel-row').style.display='none';
+  const p=D.people.find(x=>x.id===curPersonId);
+  el('ptxn-title').textContent='Transaction'+(p?' with '+p.name:'');
+  ptToggle();openM('ptxn');
+}
+
+// ══════════════════════════════════════════
+// SAVE FUNCTIONS
+// ══════════════════════════════════════════
+function saveIncome(){
+  const desc=el('in-d').value.trim();
+  const cat=el('in-t').value;
+  const custom=el('in-custom').value.trim();
+  const amt=parseFloat(el('in-a').value)||0;
+  const date=el('in-dt').value||todayStr();
+  const accId=el('in-acc').value;
+  if(!desc)return alert('Enter a description');
+  if(!amt)return alert('Enter an amount');
+  if(!accId)return alert('Select an account (add one in Accounts tab first)');
+  const label=custom||cat;
+  D.txns.push({id:uid(),type:'income',category:label,description:desc,amount:amt,date,accountId:accId});
+  adjustAcct(accId,+amt);
+  saveD();closeM();render();
+  el('in-d').value='';el('in-a').value='';el('in-custom').value='';
+}
+
+function saveExpense(){
+  const desc=el('ex-d').value.trim();
+  const cat=el('ex-cat').value;
+  const amt=parseFloat(el('ex-a').value)||0;
+  const date=el('ex-dt').value||todayStr();
+  const accId=el('ex-acc').value;
+  if(!desc)return alert('Enter a description');
+  if(!amt)return alert('Enter an amount');
+  if(!accId)return alert('Select an account');
+  D.txns.push({id:uid(),type:'expense',category:cat,description:desc,amount:amt,date,accountId:accId});
+  adjustAcct(accId,-amt);
+  saveD();closeM();render();
+  el('ex-d').value='';el('ex-a').value='';
+}
+
+function saveCCExp(){
+  const desc=el('cce-d').value.trim();
+  const cat=el('cce-cat').value;
+  const amt=parseFloat(el('cce-a').value)||0;
+  const date=el('cce-dt').value||todayStr();
+  const cardId=el('cce-card').value;
+  if(!desc)return alert('Enter a description');
+  if(!amt)return alert('Enter an amount');
+  if(!cardId)return alert('Add a credit card first');
+  const isEmi=el('cce-emi').value==='yes';
+  if(isEmi){
+    const months=parseInt(el('cce-emim').value)||3;
+    const debAccId=el('cce-deb').value;
+    const emiAmt=Math.round(amt/months);
+    D.emis.push({id:uid(),name:desc+' (CC EMI)',bank:'Credit Card',amount:emiAmt,dueDay:15,monthsLeft:months,accountId:debAccId||null,status:'active',autoPay:false});
+  }else{
+    const cc=D.ccards.find(c=>c.id===cardId);
+    if(cc)cc.outstanding=(cc.outstanding||0)+amt;
+  }
+  D.txns.push({id:uid(),type:'cc_expense',category:cat,description:desc,amount:amt,date,cardId,isEmi});
+  saveD();closeM();render();
+  el('cce-d').value='';el('cce-a').value='';
+}
+
+function saveEmiPay(){
+  const emiId=el('ep-emi').value;
+  const amt=parseFloat(el('ep-a').value)||0;
+  const date=el('ep-dt').value||todayStr();
+  const accId=el('ep-acc').value;
+  if(!emiId)return alert('Select an EMI');
+  if(!amt)return alert('Enter amount');
+  if(!accId)return alert('Select account');
+  const emi=D.emis.find(e=>e.id===emiId);
+  D.txns.push({id:uid(),type:'emi_payment',category:'EMI',description:'EMI: '+(emi?emi.name:''),amount:amt,date,accountId:accId,emiId,isAuto:false});
+  adjustAcct(accId,-amt);
+  if(emi){emi.monthsLeft=Math.max(0,(emi.monthsLeft||0)-1);if(emi.monthsLeft===0)emi.status='completed';}
+  saveD();closeM();render();
+}
+
+function savePTxn(){
+  const type=el('pt-type').value;
+  const desc=el('pt-d').value.trim();
+  const amt=parseFloat(el('pt-a').value)||0;
+  const date=el('pt-dt').value||todayStr();
+  const accId=el('pt-acc').value;
+  const remind=el('pt-rem').value;
+  const note=el('pt-note').value.trim();
+  if(!desc)return alert('Enter a description');
+  if(!amt)return alert('Enter an amount');
+  let pid=curPersonId||el('pt-psel').value;
+  if(!pid)return alert('Select a person');
+  D.txns.push({id:uid(),type,category:'People',description:desc,amount:amt,date,accountId:accId||null,personId:pid,reminderDate:remind||null,note});
+  if(accId){
+    const debit=['given_gift','given_lend','returned'];
+    const credit=['received','borrowed','recv_back'];
+    if(debit.includes(type))adjustAcct(accId,-amt);
+    else if(credit.includes(type))adjustAcct(accId,+amt);
+  }
+  saveD();closeM();
+  if(curPersonId)renderPersonDetail(curPersonId);
+  render();
+  el('pt-d').value='';el('pt-a').value='';el('pt-rem').value='';el('pt-note').value='';
+}
+
+function savePerson(){
+  const name=el('ps-n').value.trim();
+  const relation=el('ps-r').value;
+  const phone=el('ps-ph').value.trim();
+  if(!name)return alert('Enter a name');
+  D.people.push({id:uid(),name,relation,phone});
+  saveD();closeM();renderPeople();
+  el('ps-n').value='';el('ps-ph').value='';
+}
+
+function saveEmi(){
+  const name=el('em-n').value.trim();
+  const bank=el('em-b').value.trim()||'—';
+  const amt=parseFloat(el('em-a').value)||0;
+  const dueDay=parseInt(el('em-dd').value)||1;
+  const monthsLeft=parseInt(el('em-mr').value)||0;
+  const accId=el('em-acc').value;
+  const autoPay=el('em-auto').checked;
+  if(!name)return alert('Enter loan name');
+  if(!amt)return alert('Enter EMI amount');
+  D.emis.push({id:uid(),name,bank,amount:amt,dueDay,monthsLeft,accountId:accId||null,status:'active',autoPay});
+  saveD();closeM();render();
+  ['em-n','em-b','em-a','em-dd','em-mr'].forEach(id=>el(id).value='');
+  el('em-auto').checked=false;
+  el('em-auto-note').style.display='none';
+}
+
+function saveCCard(){
+  const name=el('cc-cn').value.trim();
+  const bank=el('cc-cb').value.trim();
+  const limit=parseFloat(el('cc-cl').value)||0;
+  const outstanding=parseFloat(el('cc-cd').value)||0;
+  const stmtDay=parseInt(el('cc-sd').value)||15;
+  if(!name)return alert('Enter card name');
+  D.ccards.push({id:uid(),name,bank,limit,outstanding,stmtDay});
+  saveD();closeM();render();
+  ['cc-cn','cc-cb','cc-cl','cc-cd','cc-sd'].forEach(id=>el(id).value='');
+}
+
+function saveAccount(){
+  const name=el('ac-n').value.trim();
+  const type=el('ac-t').value;
+  const balance=parseFloat(el('ac-b').value)||0;
+  if(!name)return alert('Enter bank name');
+  D.accounts.push({id:uid(),name,type,balance});
+  saveD();closeM();render();
+  el('ac-n').value='';el('ac-b').value='';
+}
+
+// ══════════════════════════════════════════
+// DELETE — with balance reversal
+// ══════════════════════════════════════════
+function delTxn(id){
+  const t=D.txns.find(x=>x.id===id);
+  if(!t||!confirm('Delete this transaction?'))return;
+  if(t.accountId){
+    const credit=['income','received','borrowed','recv_back'];
+    const debit=['expense','cc_expense','emi_payment','given_gift','given_lend','returned'];
+    if(credit.includes(t.type))adjustAcct(t.accountId,-t.amount);
+    else if(debit.includes(t.type))adjustAcct(t.accountId,+t.amount);
+  }
+  if(t.type==='cc_expense'&&t.cardId&&!t.isEmi){
+    const cc=D.ccards.find(c=>c.id===t.cardId);
+    if(cc)cc.outstanding=Math.max(0,(cc.outstanding||0)-t.amount);
+  }
+  // If reversing an auto-pay EMI, restore month count
+  if(t.type==='emi_payment'&&t.emiId&&t.isAuto){
+    const emi=D.emis.find(e=>e.id===t.emiId);
+    if(emi){emi.monthsLeft=(emi.monthsLeft||0)+1;if(emi.status==='completed')emi.status='active';}
+  }
+  D.txns=D.txns.filter(x=>x.id!==id);
+  saveD();
+  if(curPersonId)renderPersonDetail(curPersonId);
+  render();
+}
+function delEmi(id){if(!confirm('Remove this EMI/loan?'))return;D.emis=D.emis.filter(e=>e.id!==id);saveD();render();}
+function delCC(id){if(!confirm('Remove this credit card?'))return;D.ccards=D.ccards.filter(c=>c.id!==id);saveD();render();}
+function delAcct(id){if(!confirm('Remove this account?\nNote: Past transactions will remain in history.'))return;D.accounts=D.accounts.filter(a=>a.id!==id);saveD();render();}
+function delPerson(){
+  const p=D.people.find(x=>x.id===curPersonId);
+  if(!p||!confirm('Delete '+p.name+' and all their transactions?'))return;
+  D.txns=D.txns.filter(t=>t.personId!==curPersonId);
+  D.people=D.people.filter(x=>x.id!==curPersonId);
+  saveD();closeDet('det-person');curPersonId=null;renderPeople();
+}
+
+// ══════════════════════════════════════════
+// FILTERS
+// ══════════════════════════════════════════
+let txnF='all', pplF='all';
+function setTF(f,btn){txnF=f;document.querySelectorAll('#txn-filters .fc').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderTxns();}
+function setPF(f,btn){pplF=f;document.querySelectorAll('#ppl-filters .fc').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderPeople();}
+
+// ══════════════════════════════════════════
+// RENDER — all screens
+// ══════════════════════════════════════════
+function render(){
+  el('mcl').textContent=SHORT[CM-1]+' '+CY;
+  renderHome();
+  renderTxns();
+  renderPeople();
+  renderEmiCC();
+  renderAccounts();
+}
+
+// ── HOME ── (BUG FIXED: proper grid layout + live account balance)
+function renderHome(){
+  const c=calc(CY,CM);
+  const pct=c.income>0?Math.max(0,Math.min(100,Math.round(c.actualSavings/c.income*100))):0;
+  const savColor=c.actualSavings>=0?'var(--grn)':'var(--red)';
+  const savBg=c.actualSavings>=0?'var(--grn-d)':'var(--red-d)';
+
+  // FIX: Use proper 2-column grid with 3 rows
+  setHTML('hm-stats',`
+    <div class="sg sg2" style="margin-bottom:0">
+      <div class="st"><div class="stl">💰 Income</div><div class="stv g">${fmt(c.income)}</div></div>
+      <div class="st"><div class="stl">🛒 Expenses</div><div class="stv r">${fmt(c.myExp)}</div></div>
+      <div class="st"><div class="stl">📅 EMI Paid</div><div class="stv a">${fmt(c.emiPaid)}</div></div>
+      <div class="st"><div class="stl">💳 CC Expenses</div><div class="stv r">${fmt(c.ccExp)}</div></div>
+      <div class="st"><div class="stl">👥 Given to others</div><div class="stv p">${fmt(c.ffGiven)}</div></div>
+      <div class="st" style="border-color:${savBg}"><div class="stl">✨ Net Savings</div><div class="stv" style="color:${savColor}">${fmt(c.actualSavings)}</div></div>
+    </div>
+  `);
+
+  setHTML('hm-balance',`
+    <div class="ch">📊 ${MONTHS[CM-1]} ${CY} Overview</div>
+    <div class="row">
+      <div class="rl"><div class="rn" style="font-weight:600">Total balance (all accounts)</div><div class="rs">Live sum of all linked bank accounts</div></div>
+      <div class="amt b" style="font-size:16px">${fmt(c.totalBalance)}</div>
+    </div>
+    <div class="row">
+      <div class="rl"><div class="rn">Net savings this month</div><div class="rs">Income − expenses − EMI − CC − given</div></div>
+      <div class="amt" style="color:${savColor}">${fmt(c.actualSavings)}</div>
+    </div>
+    <div class="row">
+      <div class="rl"><div class="rn">Total EMI / month</div><div class="rs">Fixed monthly loan commitments</div></div>
+      <div class="amt a">${fmt(c.totalEmiDue)}</div>
+    </div>
+    <div class="row">
+      <div class="rl"><div class="rn">CC outstanding</div><div class="rs">Unpaid credit card dues</div></div>
+      <div class="amt r">${fmt(c.totalCC)}</div>
+    </div>
+    ${c.ffRecv>0?`<div class="row"><div class="rl"><div class="rn">Received from others</div></div><div class="amt c">${fmt(c.ffRecv)}</div></div>`:''}
+    ${c.borrowed>0?`<div class="row"><div class="rl"><div class="rn">Borrowed this month</div></div><div class="amt b">${fmt(c.borrowed)}</div></div>`:''}
+    <div class="prog"><div class="pf" style="width:${pct}%;background:${pct>=50?'var(--grn)':pct>=25?'var(--amb)':'var(--red)'}"></div></div>
+    <div class="pl">${pct}% of income saved this month</div>
+  `);
+
+  // Alerts — upcoming EMI dues + reminder dates
+  let alerts='';
+  const td=dom();
+  D.emis.filter(e=>e.status!=='completed').forEach(e=>{
+    const d=(e.dueDay||1)-td;
+    if(d>=0&&d<=7){
+      const autoTag=e.autoPay?'<span class="auto-badge" style="margin-left:5px">⚡ Auto-pay</span>':'<span class="manual-badge" style="margin-left:5px">✋ Manual</span>';
+      alerts+=`<div class="card" style="border-color:rgba(251,191,36,.25);margin-bottom:.4rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:13px;font-weight:600">🔔 EMI due: ${e.name}${autoTag}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">${e.bank} · ${e.monthsLeft} months left</div></div>
+          <div style="text-align:right"><div class="amt a">${fmt(e.amount)}</div>
+          <span class="badge ${d===0?'br':'ba'}">${d===0?'Due today!':'In '+d+' day'+(d!==1?'s':'')}</span></div>
+        </div></div>`;
+    }
+  });
+  D.txns.filter(t=>(t.type==='given_lend'||t.type==='borrowed')&&t.reminderDate).forEach(t=>{
+    const d=daysUntil(t.reminderDate);
+    if(d<=7){
+      const p=D.people.find(x=>x.id===t.personId);
+      const lbl=t.type==='given_lend'?'Collect from '+(p?p.name:'someone'):'Return to '+(p?p.name:'someone');
+      alerts+=`<div class="card" style="border-color:rgba(96,165,250,.25);margin-bottom:.4rem">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:13px;font-weight:600">💸 ${lbl}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">${t.description}</div></div>
+          <div style="text-align:right"><div class="amt b">${fmt(t.amount)}</div>
+          <span class="badge ${d<=0?'br':'ba'}">${d<=0?'Overdue!':'In '+d+' day'+(d!==1?'s':'')}</span></div>
+        </div></div>`;
+    }
+  });
+  setHTML('hm-alerts',alerts);
+}
+
+// ── TRANSACTIONS ──
+const TINFO={
+  income:{icon:'💰',label:'Income',sign:'+',cls:'g'},
+  expense:{icon:'🛒',label:'Expense',sign:'−',cls:'r'},
+  cc_expense:{icon:'💳',label:'CC Expense',sign:'−',cls:'r'},
+  emi_payment:{icon:'📅',label:'EMI Paid',sign:'−',cls:'a'},
+  given_gift:{icon:'🎁',label:'Given (gift)',sign:'−',cls:'p'},
+  given_lend:{icon:'💸',label:'Lent',sign:'−',cls:'p'},
+  received:{icon:'📥',label:'Received',sign:'+',cls:'c'},
+  borrowed:{icon:'🔄',label:'Borrowed',sign:'+',cls:'b'},
+  returned:{icon:'↩️',label:'Returned',sign:'−',cls:'r'},
+  recv_back:{icon:'✅',label:'Received back',sign:'+',cls:'c'},
+};
+
+function renderTxns(){
+  const pfx=mkpfx(CY,CM);
+  let list=D.txns.filter(t=>t.date&&t.date.startsWith(pfx));
+  if(txnF==='income')list=list.filter(t=>t.type==='income');
+  else if(txnF==='expense')list=list.filter(t=>t.type==='expense');
+  else if(txnF==='cc')list=list.filter(t=>t.type==='cc_expense');
+  else if(txnF==='emi')list=list.filter(t=>t.type==='emi_payment');
+  else if(txnF==='people')list=list.filter(t=>['given_gift','given_lend','received'].includes(t.type));
+  else if(txnF==='borrow')list=list.filter(t=>['borrowed','returned','recv_back'].includes(t.type));
+  list.sort((a,b)=>b.date.localeCompare(a.date));
+  if(!list.length){setHTML('txn-list','<div class="empty">No transactions this month.<br>Tap <strong>+</strong> to add one.</div>');return;}
+  const aMap={};D.accounts.forEach(a=>aMap[a.id]=a.name);
+  const cMap={};D.ccards.forEach(c=>cMap[c.id]=c.name);
+  const pMap={};D.people.forEach(p=>pMap[p.id]=p.name);
+  setHTML('txn-list',list.map(t=>{
+    const info=TINFO[t.type]||{icon:'•',label:t.type,sign:'',cls:''};
+    const acct=t.accountId?aMap[t.accountId]:t.cardId?cMap[t.cardId]:'';
+    const who=t.personId?pMap[t.personId]:'';
+    const autoMark=t.isAuto?'<span class="auto-badge" style="margin-left:4px">⚡ auto</span>':'';
+    const sub=[t.date,t.category||info.label,acct,who].filter(Boolean).join(' · ');
+    return `<div class="card" style="padding:.7rem .9rem;margin-bottom:.4rem">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="font-size:19px;flex-shrink:0">${info.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.description}${autoMark}</div>
+          <div style="font-size:10px;color:var(--tx2);margin-top:2px">${sub}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;display:flex;align-items:center;gap:6px">
+          <div class="amt ${info.cls}">${info.sign}${fmt(t.amount)}</div>
+          <button class="xbtn" onclick="delTxn('${t.id}')">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join(''));
+}
+
+// ── PEOPLE ──
+function renderPeople(){
+  let list=pplF==='all'?D.people:D.people.filter(p=>p.relation===pplF);
+  if(!D.people.length){setHTML('ppl-list','<div class="empty">No people added yet.<br>Add Papa, Mama and your friends here.</div>');return;}
+  if(!list.length){setHTML('ppl-list','<div class="empty">No one in this category yet.</div>');return;}
+  setHTML('ppl-list',list.map(p=>{
+    const style=AVCOL[p.relation]||AVCOL.Other;
+    const init=p.name.slice(0,2).toUpperCase();
+    const pt=D.txns.filter(t=>t.personId===p.id);
+    const given=pt.filter(t=>t.type==='given_gift'||t.type==='given_lend').reduce((s,t)=>s+t.amount,0);
+    const recv=pt.filter(t=>t.type==='received'||t.type==='recv_back').reduce((s,t)=>s+t.amount,0);
+    const lent=pt.filter(t=>t.type==='given_lend').reduce((s,t)=>s+t.amount,0);
+    const recvBack=pt.filter(t=>t.type==='recv_back').reduce((s,t)=>s+t.amount,0);
+    const theyOwe=Math.max(0,lent-recvBack);
+    const borrowed=pt.filter(t=>t.type==='borrowed').reduce((s,t)=>s+t.amount,0);
+    const returned=pt.filter(t=>t.type==='returned').reduce((s,t)=>s+t.amount,0);
+    const iOwe=Math.max(0,borrowed-returned);
+    return `<div class="card" style="cursor:pointer;margin-bottom:.45rem" onclick="openPersonDetail('${p.id}')">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:${given||recv||theyOwe||iOwe?'.45rem':'0'}">
+        <div class="av" style="${style}">${init}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600">${p.name}</div>
+        <div style="font-size:11px;color:var(--tx2)">${p.relation}${p.phone?' · '+p.phone:''}</div></div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${given>0?`<span class="badge bp">Given: ${fmt(given)}</span>`:''}
+        ${recv>0?`<span class="badge bc">Received: ${fmt(recv)}</span>`:''}
+        ${theyOwe>0?`<span class="badge ba">They owe: ${fmt(theyOwe)}</span>`:''}
+        ${iOwe>0?`<span class="badge bb">I owe: ${fmt(iOwe)}</span>`:''}
+        ${!given&&!recv&&!theyOwe&&!iOwe?'<span style="font-size:11px;color:var(--tx3)">No transactions yet — tap to add</span>':''}
+      </div>
+    </div>`;
+  }).join(''));
+}
+
+// ── EMI & CC ──
+function renderEmiCC(){
+  const td=dom();
+  if(!D.emis.length){setHTML('emi-list','<div class="empty">No loans added yet.<br>Tap "+ Add loan" to track your EMIs.</div>');}
+  else setHTML('emi-list',D.emis.map(e=>{
+    const d=(e.dueDay||1)-td;
+    const accName=D.accounts.find(a=>a.id===e.accountId);
+    const statusBadge=e.status==='completed'
+      ?'<span class="badge bg">✅ Completed</span>'
+      :d===0?'<span class="badge br">Due today!</span>'
+      :d>0&&d<=5?`<span class="badge ba">Due in ${d} days</span>`
+      :`<span class="badge bx">Due ${d<0?'(past)':'on'} ${e.dueDay}th</span>`;
+    const payBadge=e.autoPay
+      ?'<span class="auto-badge">⚡ Auto-pay</span>'
+      :'<span class="manual-badge">✋ Manual</span>';
+    return `<div class="card" style="margin-bottom:.4rem">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600">${e.name}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">${e.bank}${accName?' · '+accName.name:''} · ${e.monthsLeft} months left</div>
+          <div style="margin-top:5px;display:flex;gap:5px;flex-wrap:wrap">${statusBadge} ${payBadge}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:8px">
+          <div class="amt a">${fmt(e.amount)}<span style="font-size:10px;color:var(--tx2)">/mo</span></div>
+          ${e.status!=='completed'&&!e.autoPay?`<button class="pill-btn" style="font-size:10px;padding:3px 8px;margin-top:4px;display:block;margin-left:auto" onclick="event.stopPropagation();quickPayEmi('${e.id}')">Pay now</button>`:''}
+          <button class="xbtn" style="display:block;margin-left:auto;margin-top:3px" onclick="delEmi('${e.id}')">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join(''));
+
+  if(!D.ccards.length){setHTML('cc-list','<div class="empty">No credit cards added yet</div>');}
+  else setHTML('cc-list',D.ccards.map(c=>{
+    const used=c.limit>0?Math.min(100,Math.round((c.outstanding||0)/c.limit*100)):0;
+    return `<div class="card" style="margin-bottom:.4rem">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600">${c.name}</div>
+          <div style="font-size:11px;color:var(--tx2);margin-top:2px">${c.bank} · Stmt: ${c.stmtDay}th · Limit: ${fmt(c.limit)}</div>
+          ${c.limit>0?`<div class="prog" style="margin-top:5px"><div class="pf" style="width:${used}%;background:${used>80?'var(--red)':used>50?'var(--amb)':'var(--grn)'}"></div></div><div class="pl">${used}% of limit used</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:8px">
+          <div class="amt r">${fmt(c.outstanding||0)}</div>
+          <div style="font-size:10px;color:var(--tx2)">outstanding</div>
+          <button class="xbtn" style="display:block;margin-left:auto;margin-top:3px" onclick="delCC('${c.id}')">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join(''));
+
+  el('emi-tot').textContent=fmt(D.emis.filter(e=>e.status!=='completed').reduce((s,e)=>s+(e.amount||0),0));
+  el('cc-tot').textContent=fmt(D.ccards.reduce((s,c)=>s+(c.outstanding||0),0));
+}
+
+// Quick pay a manual EMI directly from the EMI list
+function quickPayEmi(emiId){
+  if(!D.accounts.length){alert('Add a bank account first.');return;}
+  const emi=D.emis.find(e=>e.id===emiId);if(!emi)return;
+  // Show account selector via a quick prompt alternative
+  fillEmiPayModal();
+  // Pre-select this EMI
+  const sel=el('ep-emi');
+  if(sel){
+    for(let i=0;i<sel.options.length;i++){
+      if(sel.options[i].value===emiId){sel.selectedIndex=i;break;}
+    }
+    epEmiChange();
+  }
+  openM('emi-pay');
+}
+
+// ── ACCOUNTS ──
+function renderAccounts(){
+  const COLS=['background:rgba(96,165,250,.18);color:#60a5fa','background:rgba(52,211,153,.18);color:#34d399','background:rgba(251,191,36,.18);color:#fbbf24','background:rgba(167,139,250,.18);color:#a78bfa','background:rgba(6,182,212,.18);color:#06b6d4'];
+  if(!D.accounts.length){setHTML('acct-list','<div class="empty">No accounts added yet.<br>Add your bank accounts — they are needed for all transactions.</div>');el('acct-tot').textContent='₹0';return;}
+  let total=0;
+  setHTML('acct-list',D.accounts.map((a,i)=>{
+    total+=(a.balance||0);
+    const pfx=mkpfx(CY,CM);
+    const monthIn=D.txns.filter(t=>t.accountId===a.id&&t.date.startsWith(pfx)&&['income','received','borrowed','recv_back'].includes(t.type)).reduce((s,t)=>s+(t.amount||0),0);
+    const monthOut=D.txns.filter(t=>t.accountId===a.id&&t.date.startsWith(pfx)&&['expense','emi_payment','given_gift','given_lend','returned'].includes(t.type)).reduce((s,t)=>s+(t.amount||0),0);
+    return `<div class="card" style="margin-bottom:.4rem">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="av" style="${COLS[i%COLS.length]}">${a.name.slice(0,2).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600">${a.name}</div>
+          <div style="font-size:11px;color:var(--tx2)">${a.type}</div>
+          ${monthIn||monthOut?`<div style="font-size:10px;color:var(--tx2);margin-top:3px">This month: <span style="color:var(--grn)">+${fmt(monthIn)}</span> <span style="color:var(--red)">−${fmt(monthOut)}</span></div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="amt b" style="font-size:16px">${fmt(a.balance||0)}</div>
+          <button class="xbtn" style="display:block;margin-left:auto;margin-top:2px" onclick="delAcct('${a.id}')">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join(''));
+  el('acct-tot').textContent=fmt(total);
+}
+
+// ══════════════════════════════════════════
+// PERSON DETAIL
+// ══════════════════════════════════════════
+function openPersonDetail(id){
+  curPersonId=id;
+  renderPersonDetail(id);
+  el('det-person').classList.add('on');
+}
+function closeDet(id){el(id).classList.remove('on');curPersonId=null;}
+function renderPersonDetail(id){
+  const p=D.people.find(x=>x.id===id);if(!p)return;
+  el('det-pname').textContent=p.name;
+  el('det-prel').textContent=p.relation+(p.phone?' · '+p.phone:'');
+  const pt=D.txns.filter(t=>t.personId===id);
+  const given=pt.filter(t=>t.type==='given_gift'||t.type==='given_lend').reduce((s,t)=>s+t.amount,0);
+  const recv=pt.filter(t=>t.type==='received'||t.type==='recv_back').reduce((s,t)=>s+t.amount,0);
+  el('dp-given').textContent=fmt(given);
+  el('dp-recv').textContent=fmt(recv);
+  const lent=pt.filter(t=>t.type==='given_lend').reduce((s,t)=>s+t.amount,0);
+  const recvBack=pt.filter(t=>t.type==='recv_back').reduce((s,t)=>s+t.amount,0);
+  const theyOwe=Math.max(0,lent-recvBack);
+  const borrowed=pt.filter(t=>t.type==='borrowed').reduce((s,t)=>s+t.amount,0);
+  const returned=pt.filter(t=>t.type==='returned').reduce((s,t)=>s+t.amount,0);
+  const iOwe=Math.max(0,borrowed-returned);
+  let ph='';
+  if(theyOwe>0){
+    ph+=`<div class="card" style="border-color:rgba(251,191,36,.3);margin-bottom:.45rem">
+      <div style="font-size:11px;color:var(--amb);font-weight:600;margin-bottom:3px">⏳ ${p.name} owes you</div>
+      <div class="amt a" style="font-size:20px">${fmt(theyOwe)}</div>
+      <div class="part-row">
+        <button class="bsv" style="background:var(--s3);color:var(--tx1);border:1px solid var(--bd)" onclick="markPartialReturn('${id}','recv_back',${theyOwe})">Record repayment</button>
+      </div>
+    </div>`;
+  }
+  if(iOwe>0){
+    ph+=`<div class="card" style="border-color:rgba(96,165,250,.3);margin-bottom:.45rem">
+      <div style="font-size:11px;color:var(--blu);font-weight:600;margin-bottom:3px">⏳ You owe ${p.name}</div>
+      <div class="amt b" style="font-size:20px">${fmt(iOwe)}</div>
+      <div class="part-row">
+        <button class="bsv" style="background:var(--s3);color:var(--tx1);border:1px solid var(--bd)" onclick="markPartialReturn('${id}','returned',${iOwe})">Record payment</button>
+      </div>
+    </div>`;
+  }
+  setHTML('dp-pending',ph);
+  const aMap={};D.accounts.forEach(a=>aMap[a.id]=a.name);
+  const sorted=[...pt].sort((a,b)=>b.date.localeCompare(a.date));
+  if(!sorted.length){setHTML('dp-txns','<div class="empty">No transactions yet.<br>Tap "+ Add" above to record one.</div>');return;}
+  setHTML('dp-txns',sorted.map(t=>{
+    const info=TINFO[t.type]||{icon:'•',label:t.type,sign:'',cls:''};
+    const acct=t.accountId?aMap[t.accountId]:'';
+    const remBadge=t.reminderDate?`<span class="badge ba" style="margin-top:3px;display:inline-flex">🔔 Due: ${t.reminderDate}</span>`:'';
+    return `<div class="txni">
+      <div style="font-size:18px;flex-shrink:0">${info.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.description}</div>
+        <div style="font-size:10px;color:var(--tx2);margin-top:1px">${info.label} · ${t.date}${acct?' · '+acct:''}${t.note?' · '+t.note:''}</div>
+        ${remBadge}
+      </div>
+      <div style="text-align:right;flex-shrink:0;display:flex;align-items:center;gap:5px">
+        <div class="amt ${info.cls}">${info.sign}${fmt(t.amount)}</div>
+        <button class="xbtn" onclick="delTxn('${t.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join(''));
+}
+
+// Quick record partial repayment from person detail
+function markPartialReturn(personId,type,maxAmt){
+  const amtStr=prompt(`Enter amount to record (max ${fmt(maxAmt)}):`);
+  if(!amtStr)return;
+  const amt=parseFloat(amtStr);
+  if(!amt||amt<=0)return alert('Invalid amount');
+  if(amt>maxAmt+0.01)return alert('Amount cannot exceed what is owed: '+fmt(maxAmt));
+  if(!D.accounts.length)return alert('Add a bank account first.');
+  const desc=type==='recv_back'?'Repayment received':'Repayment made';
+  const accId=D.accounts[0].id;
+  D.txns.push({id:uid(),type,category:'People',description:desc,amount:amt,date:todayStr(),accountId:accId,personId,note:'partial'});
+  if(type==='recv_back')adjustAcct(accId,+amt);
+  else adjustAcct(accId,-amt);
+  saveD();renderPersonDetail(personId);render();
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+loadD();
+initPin();
+</script>
+</body>
+</html>
